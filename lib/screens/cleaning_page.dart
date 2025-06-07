@@ -8,8 +8,56 @@ class CleaningPage extends StatefulWidget {
 }
 
 class _CleaningPageState extends State<CleaningPage> {
-  final List<Map<String, dynamic>> _rooms = [
-  ];
+  final List<Map<String, dynamic>> _rooms = [];
+  final TextEditingController _roomController = TextEditingController();
+
+  void _showAddRoomDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add New Room'),
+          content: TextField(
+            controller: _roomController,
+            decoration: const InputDecoration(
+              hintText: 'Enter room name',
+              border: OutlineInputBorder(),
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _roomController.clear();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (_roomController.text.isNotEmpty) {
+                  setState(() {
+                    _rooms.add({
+                      'title': _roomController.text,
+                    });
+                  });
+                  Navigator.of(context).pop();
+                  _roomController.clear();
+                }
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _roomController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +84,7 @@ class _CleaningPageState extends State<CleaningPage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Implement add new 
-        },
+        onPressed: _showAddRoomDialog,
         backgroundColor: Theme.of(context).colorScheme.primary,
         child: const Icon(Icons.add, color: Colors.white),
       ),
