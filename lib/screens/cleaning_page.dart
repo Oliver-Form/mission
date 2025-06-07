@@ -41,6 +41,7 @@ class _CleaningPageState extends State<CleaningPage> {
                     _rooms.add({
                       'title': _roomController.text,
                       'progress': 0.0,
+                      'comments': <Map<String, dynamic>>[],
                     });
                   });
                   Navigator.of(context).pop();
