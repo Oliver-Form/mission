@@ -84,7 +84,7 @@ class _CleaningPageState extends State<CleaningPage> {
           final rooms = snapshot.data?.docs ?? [];
 
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 80, 16, 16),
             itemCount: rooms.length,
             itemBuilder: (context, index) {
               final room = rooms[index].data() as Map<String, dynamic>;
