@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mission/screens/groceries_page.dart';
+import 'package:mission/screens/overview_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:mission/screens/cleaning_page.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+await Firebase.initializeApp(
+  options: DefaultFirebaseOptions.currentPlatform,
+);
   runApp(const MyApp());
 }
 
@@ -53,9 +60,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _selectedIndex == 2
-          ? const GroceriesPage()
-          : _selectedIndex == 3
+      body: _selectedIndex == 0
+          ? const OverviewPage()
+          : _selectedIndex == 2
+              ? const GroceriesPage()
+              : _selectedIndex == 3
               ? const CleaningPage()
               : Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,3 +108,4 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+// 
