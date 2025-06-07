@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mission/screens/groceries_page.dart';
+import 'package:mission/screens/overview_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -36,11 +37,10 @@ class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
 
   static const List<IconData> _iconOptions = <IconData>[
+    Icons.home,
     Icons.location_on,
     Icons.shopping_cart,
     Icons.cleaning_services,
-    Icons.emoji_food_beverage,
-    Icons.home,
   ];
 
   void _onItemTapped(int index) {
@@ -52,9 +52,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _selectedIndex == 2
-          ? const GroceriesPage()
-          : Column(
+      body: _selectedIndex == 0
+          ? const OverviewPage()
+          : _selectedIndex == 2
+              ? const GroceriesPage()
+              : Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
@@ -83,11 +85,10 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Overview'), 
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Overview'),
           BottomNavigationBarItem(icon: Icon(Icons.location_on), label: 'Locations'),
           BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Groceries'),
           BottomNavigationBarItem(icon: Icon(Icons.cleaning_services), label: 'Cleaning'),
-          BottomNavigationBarItem(icon: Icon(Icons.emoji_food_beverage), label: 'Dishes'), 
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -96,3 +97,4 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+// 
