@@ -52,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _selectedIndex == 1
+      body: _selectedIndex == 2
           ? const GroceriesPage()
           : Column(
         crossAxisAlignment: CrossAxisAlignment.start,
