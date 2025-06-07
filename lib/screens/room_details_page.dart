@@ -13,6 +13,16 @@ class RoomDetailsPage extends StatefulWidget {
 }
 
 class _RoomDetailsPageState extends State<RoomDetailsPage> {
+  late double _progress;
+  late Map<String, dynamic> _room;
+
+  @override
+  void initState() {
+    super.initState();
+    _room = Map<String, dynamic>.from(widget.room);
+    _progress = _room['progress'] ?? 0.0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +33,7 @@ class _RoomDetailsPageState extends State<RoomDetailsPage> {
             floating: false,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text(widget.room['title']),
+              title: Text(_room['title']),
               background: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -44,6 +54,55 @@ class _RoomDetailsPageState extends State<RoomDetailsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const Text(
+                    'Cleaning Progress',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '${(_progress * 100).toInt()}% Clean',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Icon(
+                                _progress >= 1.0 ? Icons.check_circle : Icons.cleaning_services,
+                                color: Theme.of(context).colorScheme.primary,
+                                size: 24,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Slider(
+                            value: _progress,
+                            onChanged: (value) {
+                              setState(() {
+                                _progress = value;
+                                _room['progress'] = value;
+                              });
+                            },
+                            activeColor: Theme.of(context).colorScheme.primary,
+                            inactiveColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
                   const Text(
                     'Cleaning Tasks',
                     style: TextStyle(
@@ -81,10 +140,10 @@ class _RoomDetailsPageState extends State<RoomDetailsPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: Implement add task functionality
+          Navigator.pop(context, _room);
         },
         backgroundColor: Theme.of(context).colorScheme.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.check, color: Colors.white),
       ),
     );
   }

@@ -40,6 +40,7 @@ class _CleaningPageState extends State<CleaningPage> {
                   setState(() {
                     _rooms.add({
                       'title': _roomController.text,
+                      'progress': 0.0,
                     });
                   });
                   Navigator.of(context).pop();
@@ -72,6 +73,27 @@ class _CleaningPageState extends State<CleaningPage> {
             margin: const EdgeInsets.only(bottom: 12),
             child: ListTile(
               title: Text(room['title']),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(
+                    value: room['progress'],
+                    backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${(room['progress'] * 100).toInt()}% Clean',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
               trailing: IconButton(
                 icon: const Icon(Icons.delete_outline),
                 onPressed: () {
@@ -80,13 +102,18 @@ class _CleaningPageState extends State<CleaningPage> {
                   });
                 },
               ),
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                final updatedRoom = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => RoomDetailsPage(room: room),
                   ),
                 );
+                if (updatedRoom != null) {
+                  setState(() {
+                    _rooms[index] = updatedRoom;
+                  });
+                }
               },
             ),
           );
