@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GroceriesPage extends StatefulWidget {
   const GroceriesPage({Key? key}) : super(key: key);
@@ -14,7 +15,8 @@ class _GroceryItem {
 }
 
 class _GroceriesPageState extends State<GroceriesPage> {
-  final List<_GroceryItem> _items = [];
+  // Firestore collection reference
+  final _groceries = FirebaseFirestore.instance.collection('groceries');
   final TextEditingController _controller = TextEditingController();
 
   @override
@@ -23,10 +25,14 @@ class _GroceriesPageState extends State<GroceriesPage> {
     super.dispose();
   }
 
-  void _addItem(String name) {
-    if (name.trim().isEmpty) return;
-    setState(() {
-      _items.add(_GroceryItem(name.trim()));
+  Future<void> _addItem(String name) async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+    await _groceries.add({
+      'name': trimmed,
+      'done': false,
+      'user': 'bob',
+      // timestamp can be added later if needed
     });
     _controller.clear();
   }
@@ -53,19 +59,27 @@ class _GroceriesPageState extends State<GroceriesPage> {
             onSubmitted: _addItem,
           ),
           const SizedBox(height: 16),
+          // Real-time list from Firestore
           Expanded(
-            child: ListView(
-              children: _items.map((item) {
-                return CheckboxListTile(
-                  value: item.done,
-                  title: Text(item.name),
-                  onChanged: (checked) {
-                    setState(() {
-                      item.done = checked ?? false;
-                    });
-                  },
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _groceries.orderBy('name').snapshots(),
+              builder: (ctx, snap) {
+                if (snap.hasError) return const Center(child: Text('Error loading items'));
+                if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+                final docs = snap.data!.docs;
+                return ListView(
+                  children: docs.map((doc) {
+                    final data = doc.data()! as Map<String, dynamic>;
+                    return CheckboxListTile(
+                      title: Text(data['name'] ?? ''),
+                      value: data['done'] as bool? ?? false,
+                      onChanged: (checked) {
+                        doc.reference.update({'done': checked});
+                      },
+                    );
+                  }).toList(),
                 );
-              }).toList(),
+              },
             ),
           ),
         ],
@@ -74,4 +88,3 @@ class _GroceriesPageState extends State<GroceriesPage> {
   }
 }
 
-// 
