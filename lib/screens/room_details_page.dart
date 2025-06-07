@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RoomDetailsPage extends StatefulWidget {
   final Map<String, dynamic> room;
+  final String roomId;
 
   const RoomDetailsPage({
     super.key,
     required this.room,
+    required this.roomId,
   });
 
   @override
@@ -16,30 +19,40 @@ class _RoomDetailsPageState extends State<RoomDetailsPage> {
   late double _progress;
   late Map<String, dynamic> _room;
   final TextEditingController _commentController = TextEditingController();
-  final List<Map<String, dynamic>> _comments = [];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  List<Map<String, dynamic>> _comments = [];
 
   @override
   void initState() {
     super.initState();
     _room = Map<String, dynamic>.from(widget.room);
     _progress = _room['progress'] ?? 0.0;
-    if (_room['comments'] != null) {
-      _comments.addAll(
-        (_room['comments'] as List).map((comment) => Map<String, dynamic>.from(comment)).toList(),
-      );
-    }
+    _comments = List<Map<String, dynamic>>.from(_room['comments'] ?? []);
   }
 
-  void _addComment() {
+  Future<void> _addComment() async {
     if (_commentController.text.isNotEmpty) {
-      setState(() {
-        _comments.add({
+      try {
+        final comment = {
           'text': _commentController.text,
-          'timestamp': DateTime.now(),
+        };
+        
+        await _firestore.collection('rooms').doc(widget.roomId).update({
+          'comments': FieldValue.arrayUnion([comment])
         });
-        _room['comments'] = _comments;
+        
+        setState(() {
+          _comments.add(comment);
+        });
+        
         _commentController.clear();
-      });
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error adding comment: $e')),
+          );
+        }
+      }
     }
   }
 
@@ -187,27 +200,13 @@ class _RoomDetailsPageState extends State<RoomDetailsPage> {
                       itemCount: _comments.length,
                       itemBuilder: (context, index) {
                         final comment = _comments[index];
-                        final timestamp = comment['timestamp'] as DateTime;
                         return Card(
                           margin: const EdgeInsets.only(bottom: 8),
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  comment['text'],
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  '${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')} - ${timestamp.day}/${timestamp.month}/${timestamp.year}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
-                                  ),
-                                ),
-                              ],
+                            child: Text(
+                              comment['text'],
+                              style: const TextStyle(fontSize: 16),
                             ),
                           ),
                         );
