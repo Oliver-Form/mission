@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mission/screens/room_details_page.dart';
 
 class CleaningPage extends StatefulWidget {
   const CleaningPage({super.key});
@@ -79,6 +80,14 @@ class _CleaningPageState extends State<CleaningPage> {
                   });
                 },
               ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RoomDetailsPage(room: room),
+                  ),
+                );
+              },
             ),
           );
         },
