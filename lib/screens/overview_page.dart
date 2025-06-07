@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({Key? key}) : super(key: key);
@@ -9,8 +10,22 @@ class OverviewPage extends StatefulWidget {
 
 class _OverviewPageState extends State<OverviewPage> {
   bool _dishesDone = false;
-  bool _groceriesDone = false;
-  bool _cleaningDone = false;
+  final _doc = FirebaseFirestore.instance
+      .collection('overview')
+      .doc('sharedOverviewChecklist');
+
+  @override
+  void initState() {
+    super.initState();
+    // Load initial state and listen for external changes
+    _doc.snapshots().listen((snap) {
+      if (snap.exists) {
+        setState(() {
+          _dishesDone = (snap.data()?['dishesDone'] as bool?) ?? false;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +62,11 @@ class _OverviewPageState extends State<OverviewPage> {
                   CheckboxListTile(
                     title: const Text('Dishes Done'),
                     value: _dishesDone,
-                    onChanged: (val) => setState(() => _dishesDone = val ?? false),
+                    onChanged: (val) {
+                      final newValue = val ?? false;
+                      // update Firestore
+                      _doc.update({'dishesDone': newValue});
+                    },
                   ),
                 ],
               ),
