@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mission/pages/groceries_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -50,7 +51,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body: _selectedIndex == 1
+          ? const GroceriesPage()
+          : Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
@@ -60,7 +63,7 @@ class _MyHomePageState extends State<MyHomePage> {
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 color: Theme.of(context).colorScheme.primary,
               ),
-            ), 
+            ),
           ),
           Expanded(
             child: Center(
