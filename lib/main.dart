@@ -40,6 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Icons.shopping_cart,
     Icons.cleaning_services,
     Icons.emoji_food_beverage,
+    Icons.home,
   ];
 
   void _onItemTapped(int index) {
@@ -82,10 +83,11 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Overview'), 
           BottomNavigationBarItem(icon: Icon(Icons.location_on), label: 'Locations'),
           BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Groceries'),
           BottomNavigationBarItem(icon: Icon(Icons.cleaning_services), label: 'Cleaning'),
-          BottomNavigationBarItem(icon: Icon(Icons.emoji_food_beverage), label: 'Dishes'), // Plate-like icon
+          BottomNavigationBarItem(icon: Icon(Icons.emoji_food_beverage), label: 'Dishes'), 
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
