@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mission/services/user_preferences.dart';
 
 class GroceriesPage extends StatefulWidget {
   const GroceriesPage({Key? key}) : super(key: key);
@@ -28,11 +29,12 @@ class _GroceriesPageState extends State<GroceriesPage> {
   Future<void> _addItem(String name) async {
     final trimmed = name.trim();
     if (trimmed.isEmpty) return;
+    
+    final userName = UserPreferences.getName() ?? 'Unknown';
     await _groceries.add({
       'name': trimmed,
       'done': false,
-      'user': 'bob',
-      // timestamp can be added later if needed
+      'user': userName,
     });
     _controller.clear();
   }
@@ -72,6 +74,7 @@ class _GroceriesPageState extends State<GroceriesPage> {
                     final data = doc.data()! as Map<String, dynamic>;
                     return CheckboxListTile(
                       title: Text(data['name'] ?? ''),
+                      subtitle: Text('Added by ${data['user'] ?? 'Unknown'}'),
                       value: data['done'] as bool? ?? false,
                       onChanged: (checked) {
                         doc.reference.update({'done': checked});

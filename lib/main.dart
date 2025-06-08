@@ -3,12 +3,15 @@ import 'package:mission/screens/groceries_page.dart';
 import 'package:mission/screens/overview_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:mission/screens/cleaning_page.dart';
+import 'package:mission/services/user_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-await Firebase.initializeApp(
-  options: DefaultFirebaseOptions.currentPlatform,
-);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await UserPreferences.init();
   runApp(const MyApp());
 }
 
@@ -41,6 +44,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
+  final TextEditingController _nameController = TextEditingController();
 
   static const List<IconData> _iconOptions = <IconData>[
     Icons.home,
@@ -49,10 +53,65 @@ class _MyHomePageState extends State<MyHomePage> {
     Icons.cleaning_services,
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _checkName();
+  }
+
+  Future<void> _checkName() async {
+    if (!UserPreferences.hasName()) {
+      // Wait for the widget to be built
+      await Future.delayed(Duration.zero);
+      if (mounted) {
+        _showNameDialog();
+      }
+    }
+  }
+
+  void _showNameDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Welcome!'),
+          content: TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(
+              hintText: 'Enter your name',
+              border: OutlineInputBorder(),
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                if (_nameController.text.isNotEmpty) {
+                  await UserPreferences.setName(_nameController.text);
+                  if (mounted) {
+                    Navigator.of(context).pop();
+                  }
+                }
+              },
+              child: const Text('Continue'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -62,6 +121,8 @@ class _MyHomePageState extends State<MyHomePage> {
           ? const OverviewPage()
           : _selectedIndex == 2
               ? const GroceriesPage()
+              : _selectedIndex == 3
+              ? const CleaningPage()
               : Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
