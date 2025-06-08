@@ -1,8 +1,16 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.hackclub.mission">
+  <!-- Permissions for geolocation -->
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <application
         android:label="mission"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- Add your Google Maps API key here -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="YOUR_GOOGLE_MAPS_API_KEY"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

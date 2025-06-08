@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mission/screens/groceries_page.dart';
 import 'package:mission/screens/overview_page.dart';
+import 'package:mission/screens/locations_page.dart';
+import 'package:mission/screens/groceries_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -60,9 +61,11 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: _selectedIndex == 0
           ? const OverviewPage()
-          : _selectedIndex == 2
-              ? const GroceriesPage()
-              : Column(
+          : _selectedIndex == 1
+              ? const LocationsPage()
+              : _selectedIndex == 2
+                  ? const GroceriesPage()
+                  : Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
@@ -103,4 +106,4 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-// 
+//
