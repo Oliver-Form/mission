@@ -49,7 +49,6 @@ class _MyHomePageState extends State<MyHomePage> {
     Icons.location_on,
     Icons.shopping_cart,
     Icons.cleaning_services,
-    Icons.emoji_food_beverage,
   ];
 
   void _onItemTapped(int index) {
@@ -78,7 +77,6 @@ class _MyHomePageState extends State<MyHomePage> {
           BottomNavigationBarItem(icon: Icon(Icons.location_on), label: 'Locations'),
           BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Groceries'),
           BottomNavigationBarItem(icon: Icon(Icons.cleaning_services), label: 'Cleaning'),
-          BottomNavigationBarItem(icon: Icon(Icons.emoji_food_beverage), label: 'Dishes'),
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -87,4 +85,3 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-//
