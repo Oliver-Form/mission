@@ -3,6 +3,7 @@ import 'package:mission/screens/groceries_page.dart';
 import 'package:mission/screens/overview_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:mission/screens/cleaning_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Icons.location_on,
     Icons.shopping_cart,
     Icons.cleaning_services,
+    Icons.emoji_food_beverage,
   ];
 
   void _onItemTapped(int index) {
@@ -62,6 +64,8 @@ class _MyHomePageState extends State<MyHomePage> {
           ? const OverviewPage()
           : _selectedIndex == 2
               ? const GroceriesPage()
+              : _selectedIndex == 3
+              ? const CleaningPage()
               : Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -95,6 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
           BottomNavigationBarItem(icon: Icon(Icons.location_on), label: 'Locations'),
           BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Groceries'),
           BottomNavigationBarItem(icon: Icon(Icons.cleaning_services), label: 'Cleaning'),
+          BottomNavigationBarItem(icon: Icon(Icons.emoji_food_beverage), label: 'Dishes'),
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
