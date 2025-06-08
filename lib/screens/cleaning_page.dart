@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mission/screens/room_details_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mission/services/user_preferences.dart';
 
 class CleaningPage extends StatefulWidget {
   const CleaningPage({super.key});
@@ -12,6 +13,70 @@ class CleaningPage extends StatefulWidget {
 class _CleaningPageState extends State<CleaningPage> {
   final TextEditingController _roomController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<void> _assignUnassignedRooms() async {
+    final roomsSnapshot = await _firestore.collection('rooms').get();
+    final rooms = roomsSnapshot.docs;
+
+    for (var room in rooms) {
+      final roomData = room.data();
+      if (roomData['assignedUser'] == null) {
+        final assignedUser = await _getAssignedUser();
+        await room.reference.update({'assignedUser': assignedUser});
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _assignUnassignedRooms();
+  }
+
+  Future<String> _getAssignedUser() async {
+    final userName = UserPreferences.getName() ?? 'Unknown';
+    
+    // Get all users and their room counts
+    final usersSnapshot = await _firestore.collection('user').get();
+    final users = usersSnapshot.docs;
+    
+    // If user doesn't exist in users collection, add them
+    if (!users.any((doc) => doc.data()['name'] == userName)) {
+      await _firestore.collection('user').add({
+        'name': userName,
+        'roomCount': 0,
+      });
+    }
+
+    // Get all rooms and their assigned users
+    final roomsSnapshot = await _firestore.collection('rooms').get();
+    final rooms = roomsSnapshot.docs;
+    
+    // Count rooms per user
+    final userRoomCounts = <String, int>{};
+    for (var room in rooms) {
+      final assignedUser = room.data()['assignedUser'] as String?;
+      if (assignedUser != null) {
+        userRoomCounts[assignedUser] = (userRoomCounts[assignedUser] ?? 0) + 1;
+      }
+    }
+
+    // Find user with least rooms
+    String? assignedUser;
+    int minRooms = -1;
+    
+    for (var user in users) {
+      final userData = user.data();
+      final userDisplayName = userData['name'] as String? ?? 'Unknown';
+      final roomCount = userRoomCounts[userDisplayName] ?? 0;
+      if (minRooms == -1 || roomCount < minRooms) {
+        minRooms = roomCount;
+        assignedUser = userDisplayName;
+      }
+    }
+
+    return assignedUser ?? userName;
+  }
 
   void _showAddRoomDialog() {
     showDialog(
@@ -39,10 +104,12 @@ class _CleaningPageState extends State<CleaningPage> {
               onPressed: () async {
                 if (_roomController.text.isNotEmpty) {
                   try {
+                    final assignedUser = await _getAssignedUser();
                     await _firestore.collection('rooms').add({
                       'title': _roomController.text,
                       'progress': 0.0,
                       'comments': <Map<String, dynamic>>[],
+                      'assignedUser': assignedUser,
                     });
                     Navigator.of(context).pop();
                     _roomController.clear();
@@ -111,6 +178,14 @@ class _CleaningPageState extends State<CleaningPage> {
                         style: TextStyle(
                           fontSize: 12,
                           color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Assigned to: ${room['assignedUser'] ?? 'Unassigned'}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
                     ],

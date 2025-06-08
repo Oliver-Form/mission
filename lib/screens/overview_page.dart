@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mission/services/user_preferences.dart';
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({Key? key}) : super(key: key);
@@ -29,6 +30,8 @@ class _OverviewPageState extends State<OverviewPage> {
 
   @override
   Widget build(BuildContext context) {
+    final userName = UserPreferences.getName() ?? 'Guest';
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Overview'),
@@ -47,7 +50,7 @@ class _OverviewPageState extends State<OverviewPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Hi Bob',
+              'Hi $userName',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 24),
