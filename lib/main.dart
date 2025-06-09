@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mission/screens/groceries_page.dart';
+import 'package:mission/screens/location_screen.dart';
 import 'package:mission/screens/overview_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -114,38 +115,18 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
+ List<Widget> screens =
+     [
+      const OverviewPage(),
+       LocationScreen(),
+      GroceriesPage(),
+      const CleaningPage(),
+    ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _selectedIndex == 0
-          ? const OverviewPage()
-          : _selectedIndex == 2
-              ? const GroceriesPage()
-              : _selectedIndex == 3
-              ? const CleaningPage()
-              : Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 64, 0, 8),
-            child: Text(
-              'Mission',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Center(
-              child: Icon(
-                _iconOptions[_selectedIndex],
-                size: 100,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
-        ],
-      ),
+      body: screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Theme.of(context).colorScheme.primary,
