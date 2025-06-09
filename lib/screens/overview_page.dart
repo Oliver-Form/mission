@@ -4,6 +4,7 @@ import 'package:mission/services/user_preferences.dart';
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({Key? key}) : super(key: key);
+  static const routeName = 'overview-page';
 
   @override
   State<OverviewPage> createState() => _OverviewPageState();

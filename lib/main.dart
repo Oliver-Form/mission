@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mission/screens/friends/friends_screen.dart';
 import 'package:mission/screens/groceries_page.dart';
 import 'package:mission/screens/location_screen.dart';
 import 'package:mission/screens/overview_page.dart';
@@ -6,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:mission/screens/cleaning_page.dart';
 import 'package:mission/services/user_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,7 +15,11 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await UserPreferences.init();
-  runApp(const MyApp());
+  runApp(
+    ProviderScope(
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -118,7 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
  List<Widget> screens =
      [
       const OverviewPage(),
-       LocationScreen(),
+       FriendsScreen(),
       GroceriesPage(),
       const CleaningPage(),
     ];
