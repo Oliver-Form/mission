@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:mission/providers/profile_provider.dart';
 import 'package:mission/screens/room_details_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mission/services/user_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CleaningPage extends StatefulWidget {
+class CleaningPage extends ConsumerStatefulWidget {
   const CleaningPage({super.key});
 
   @override
-  State<CleaningPage> createState() => _CleaningPageState();
+  ConsumerState<CleaningPage> createState() => _CleaningPageState();
 }
 
-class _CleaningPageState extends State<CleaningPage> {
+class _CleaningPageState extends ConsumerState<CleaningPage> {
   final TextEditingController _roomController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -34,7 +36,7 @@ class _CleaningPageState extends State<CleaningPage> {
   }
 
   Future<String> _getAssignedUser() async {
-    final userName = UserPreferences.getName() ?? 'Unknown';
+    final userName = ref.read(profileProvider).name ?? 'Unknown';
     
     // Get all users and their room counts
     final usersSnapshot = await _firestore.collection('user').get();

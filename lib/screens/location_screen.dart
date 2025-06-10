@@ -1,9 +1,9 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:mission/utilities/location_helper.dart';
+import 'package:mission/services/location_helper.dart';
+
 
 class LocationScreen extends StatefulWidget {
   @override
@@ -31,6 +31,7 @@ class _LocationScreenState extends State<LocationScreen> {
     if (Platform.isAndroid) {
       locationSettings = AndroidSettings(
         accuracy: LocationAccuracy.high,
+        distanceFilter: 50,
         foregroundNotificationConfig: const ForegroundNotificationConfig(
           notificationTitle: "Location Service is running",
           notificationText: 'mau is updating your status',
@@ -38,6 +39,7 @@ class _LocationScreenState extends State<LocationScreen> {
       );
     } else if (Platform.isIOS) {
       locationSettings = AppleSettings(
+        distanceFilter: 50,
         accuracy: LocationAccuracy.high,
         showBackgroundLocationIndicator: true,
         allowBackgroundLocationUpdates: true,

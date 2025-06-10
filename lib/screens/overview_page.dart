@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mission/providers/profile_provider.dart';
+import 'package:mission/screens/profile_setting_screen.dart';
+import 'package:mission/services/statics.dart';
 import 'package:mission/services/user_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class OverviewPage extends StatefulWidget {
+class OverviewPage extends ConsumerStatefulWidget {
   const OverviewPage({Key? key}) : super(key: key);
 
   @override
-  State<OverviewPage> createState() => _OverviewPageState();
+  ConsumerState<OverviewPage> createState() => _OverviewPageState();
 }
 
-class _OverviewPageState extends State<OverviewPage> {
+class _OverviewPageState extends ConsumerState<OverviewPage> {
   bool _dishesDone = false;
   final _doc = FirebaseFirestore.instance
       .collection('overview')
@@ -30,16 +34,22 @@ class _OverviewPageState extends State<OverviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    final userName = UserPreferences.getName() ?? 'Guest';
+    final userName = ref.watch(profileProvider).name ?? 'User';
     
     return Scaffold(
       appBar: AppBar(
         title: const Text('Overview'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.account_circle),
+            icon: (ref.watch(profileProvider).iconLink != null)
+                ? CircleAvatar(
+                    backgroundImage: NetworkImage(ref.watch(profileProvider).iconLink?? Statics.defaultIconLink),
+                  )
+                : const Icon(Icons.account_circle),
             onPressed: () {
-              // TODO: handle account action
+              Navigator.of(context).pushNamed(ProfileSettingScreen.routeName, arguments: {
+                'isNewUser': false,
+              });
             },
           ),
         ],

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mission/services/user_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mission/providers/profile_provider.dart';
 
-class GroceriesPage extends StatefulWidget {
+class GroceriesPage extends ConsumerStatefulWidget {
   const GroceriesPage({Key? key}) : super(key: key);
 
   @override
-  State<GroceriesPage> createState() => _GroceriesPageState();
+  ConsumerState<GroceriesPage> createState() => _GroceriesPageState();
 }
 
 class _GroceryItem {
@@ -15,7 +16,7 @@ class _GroceryItem {
   _GroceryItem(this.name) : done = false;
 }
 
-class _GroceriesPageState extends State<GroceriesPage> {
+class _GroceriesPageState extends ConsumerState<GroceriesPage> {
   // Firestore collection reference
   final _groceries = FirebaseFirestore.instance.collection('groceries');
   final TextEditingController _controller = TextEditingController();
@@ -30,7 +31,7 @@ class _GroceriesPageState extends State<GroceriesPage> {
     final trimmed = name.trim();
     if (trimmed.isEmpty) return;
     
-    final userName = UserPreferences.getName() ?? 'Unknown';
+    final userName = ref.watch(profileProvider).name ?? 'Unknown';
     await _groceries.add({
       'name': trimmed,
       'done': false,
