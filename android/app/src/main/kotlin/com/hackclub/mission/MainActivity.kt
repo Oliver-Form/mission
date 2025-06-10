@@ -1,4 +1,4 @@
-package com.example.mission
+package com.hackclub.mission
 
 import io.flutter.embedding.android.FlutterActivity
 

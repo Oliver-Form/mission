@@ -19,4 +19,4 @@ class UserPreferences {
   static bool hasName() {
     return _prefs?.containsKey(_nameKey) ?? false;
   }
-} 
+}
