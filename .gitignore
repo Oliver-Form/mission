@@ -46,4 +46,6 @@ app.*.map.json
 
 lib/credential.env
 lib/firebase_options.dart
+docs/
+.gitignore
 

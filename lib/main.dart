@@ -1,7 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mission/providers/profile_provider.dart';
 import 'package:mission/screens/groceries_page.dart';
+import 'package:mission/screens/location_screen.dart';
 import 'package:mission/screens/overview_page.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:mission/screens/authGate.dart';
+import 'package:mission/screens/profile_setting_screen.dart';
 import 'firebase_options.dart';
 import 'package:mission/screens/cleaning_page.dart';
 import 'package:mission/services/user_preferences.dart';
@@ -12,31 +19,57 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await UserPreferences.init();
-  runApp(const MyApp());
+   await dotenv.load(fileName: "lib/credential.env");
+  runApp(
+    ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  @override
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  bool isLoggedIn = false;
+  ThemeMode mode = ThemeMode.system; // Define the mode variable
+
+  @override
+  void initState() {
+    super.initState();
+    ref.read(profileProvider.notifier).loadMyProfile();
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      setState(() {
+        isLoggedIn = user != null;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-
         fontFamily: 'Georgia',
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFA97C73)),
       ),
-      home: const MyHomePage(title: 'My run app!'),
+      home: isLoggedIn? MyHomePage(): AuthGate(),
+      routes:{
+        MyHomePage.routeName: (context) => const MyHomePage(),
+        AuthGate.routeName: (context) => const AuthGate(),
+        ProfileSettingScreen.routeName: (context) => const ProfileSettingScreen(),
+      }
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+  static const routeName = 'home';
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -46,60 +79,11 @@ class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
   final TextEditingController _nameController = TextEditingController();
 
-  static const List<IconData> _iconOptions = <IconData>[
-    Icons.home,
-    Icons.location_on,
-    Icons.shopping_cart,
-    Icons.cleaning_services,
-  ];
 
   @override
   void initState() {
     super.initState();
-    _checkName();
-  }
-
-  Future<void> _checkName() async {
-    if (!UserPreferences.hasName()) {
-      // Wait for the widget to be built
-      await Future.delayed(Duration.zero);
-      if (mounted) {
-        _showNameDialog();
-      }
-    }
-  }
-
-  void _showNameDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Welcome!'),
-          content: TextField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              hintText: 'Enter your name',
-              border: OutlineInputBorder(),
-            ),
-            autofocus: true,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                if (_nameController.text.isNotEmpty) {
-                  await UserPreferences.setName(_nameController.text);
-                  if (mounted) {
-                    Navigator.of(context).pop();
-                  }
-                }
-              },
-              child: const Text('Continue'),
-            ),
-          ],
-        );
-      },
-    );
+    
   }
 
   void _onItemTapped(int index) {
@@ -114,38 +98,18 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
+ List<Widget> screens =
+     [
+      const OverviewPage(),
+       LocationScreen(),
+      GroceriesPage(),
+      const CleaningPage(),
+    ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _selectedIndex == 0
-          ? const OverviewPage()
-          : _selectedIndex == 2
-              ? const GroceriesPage()
-              : _selectedIndex == 3
-              ? const CleaningPage()
-              : Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 64, 0, 8),
-            child: Text(
-              'Mission',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Center(
-              child: Icon(
-                _iconOptions[_selectedIndex],
-                size: 100,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
-        ],
-      ),
+      body: screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Theme.of(context).colorScheme.primary,
@@ -163,5 +127,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
 
 // 
