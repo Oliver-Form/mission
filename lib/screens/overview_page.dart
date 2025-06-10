@@ -41,9 +41,9 @@ class _OverviewPageState extends ConsumerState<OverviewPage> {
         title: const Text('Overview'),
         actions: [
           IconButton(
-            icon: (ref.watch(profileProvider).iconLink != null)
+            icon: (ref.watch(profileProvider).iconLink != null && ref.watch(profileProvider).iconLink != '')
                 ? CircleAvatar(
-                    backgroundImage: NetworkImage(ref.watch(profileProvider).iconLink?? Statics.defaultIconLink),
+                    backgroundImage: NetworkImage(ref.watch(profileProvider).iconLink!),
                   )
                 : const Icon(Icons.account_circle),
             onPressed: () {

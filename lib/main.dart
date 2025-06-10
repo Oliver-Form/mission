@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mission/providers/friend_location_provider.dart';
 import 'package:mission/providers/profile_provider.dart';
 import 'package:mission/screens/groceries_page.dart';
 import 'package:mission/screens/location_screen.dart';
@@ -46,6 +47,8 @@ class _MyAppState extends ConsumerState<MyApp> {
       setState(() {
         isLoggedIn = user != null;
       });
+      ref.read(friendProfilesProvider.notifier).loadFriendProfiles();
+      ref.read(friendLocationProvider.notifier).loadFriendLocations();
     });
   }
 

@@ -3,6 +3,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:mission/providers/friend_location_provider.dart';
+import 'package:mission/providers/my_status_provider.dart';
 
 class FirestoreHelper {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -16,6 +18,80 @@ class FirestoreHelper {
       await _firestore.collection(collectionPath).add(data);
     } catch (e) {
       print('Error adding document: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateStatus(UserStatus status) async {
+    var userUID = FirebaseAuth.instance.currentUser!.uid;
+    try {
+      await _firestore.collection('status').doc(userUID).update({
+        'status': status.status,
+        'icon': status.icon, // Default icon, can be changed later
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('Error updating status: $e');
+    }
+  }
+
+  Future<UserStatus> getStatus(String friendUID) async {
+    try {
+      final statusDoc = await _firestore
+          .collection('status')
+          .doc(friendUID)
+          .get();
+      if (statusDoc.exists) {
+        var data = statusDoc.data();
+        return UserStatus(
+          data?['status'] ?? 'Available',
+          data?['icon'] ?? 'default_icon.png',
+        );
+      } else {
+        return UserStatus('Offline', '🔴');
+      }
+    } catch (e) {
+      print('Error getting status: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateLocation(LatLng coordinates) async {
+    var myUID = FirebaseAuth.instance.currentUser!.uid;
+    try {
+      await _firestore.collection('locations').doc(myUID).set({
+        'coordinates': GeoPoint(coordinates.latitude, coordinates.longitude),
+        'timestamp': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      print('Error updating location: $e');
+      rethrow;
+    }
+  }
+  Stream<QuerySnapshot> getFriendLocationsStream(String myUID) {
+    return _firestore.collection('locations').snapshots();
+  }
+
+  Future<Map<String, Location>> getAllFriendLocations() async {
+    try {
+      final locationsSnapshot = await _firestore.collection('locations').get();
+      final friendLocationMap = locationsSnapshot.docs.asMap().map((
+        index,
+        doc,
+      ) {
+        var data = doc.data();
+        GeoPoint geoPoint = data['coordinates'];
+        return MapEntry(
+          doc.id,
+          Location(
+            latlng: LatLng(geoPoint.latitude, geoPoint.longitude),
+            timestamp: data['timestamp'],
+          ),
+        );
+      });
+      return friendLocationMap;
+    } catch (e) {
+      print('Error getting friend locations: $e');
       rethrow;
     }
   }
@@ -47,8 +123,10 @@ class FirestoreHelper {
   // Get all documents from a collection
   Future<Map<String, dynamic>> getUserProfile(String userUID) async {
     try {
-      final userDoc =
-          await _firestore.collection('userProfiles').doc(userUID).get();
+      final userDoc = await _firestore
+          .collection('userProfiles')
+          .doc(userUID)
+          .get();
 
       return userDoc.data() ?? {};
     } catch (e) {
@@ -59,11 +137,10 @@ class FirestoreHelper {
 
   Future<String> getUIDFromUsername(String username) async {
     try {
-      final querySnapshot =
-          await _firestore
-              .collection('userProfiles')
-              .where('username', isEqualTo: username)
-              .get();
+      final querySnapshot = await _firestore
+          .collection('userProfiles')
+          .where('username', isEqualTo: username)
+          .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         return querySnapshot.docs.first.id; // Return the first matching UID
@@ -76,10 +153,11 @@ class FirestoreHelper {
     }
   }
 
-
   Future<LatLng?> getEmergencyLocation(String friendUID) async {
-    final emergencyDoc =
-        await _firestore.collection('emergency').doc(friendUID).get();
+    final emergencyDoc = await _firestore
+        .collection('emergency')
+        .doc(friendUID)
+        .get();
     if (emergencyDoc.exists) {
       var data = emergencyDoc.data();
       if (data != null) {
@@ -138,6 +216,18 @@ class FirestoreHelper {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getAllProfiles() async {
+    try {
+      final profilesSnapshot = await _firestore
+          .collection('userProfiles')
+          .get();
+      return profilesSnapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      print('Error getting all profiles: $e');
+      rethrow;
+    }
+  }
+
   Future<void> deleteUserProfile(String userUID) async {
     await _firestore.collection('userProfiles').doc(userUID).delete();
   }
@@ -150,8 +240,10 @@ class FirestoreHelper {
 
   Future<String> getPassword(String userUID) async {
     try {
-      final passwordDoc =
-          await _firestore.collection('userPasswords').doc(userUID).get();
+      final passwordDoc = await _firestore
+          .collection('userPasswords')
+          .doc(userUID)
+          .get();
       return passwordDoc.data()?['password'] ?? '';
     } catch (e) {
       print('Error getting password: $e');
@@ -175,8 +267,10 @@ class FirestoreHelper {
 
   Future<String> getPermanentAddress(String userUID) async {
     try {
-      final addressDoc =
-          await _firestore.collection('userPasswords').doc(userUID).get();
+      final addressDoc = await _firestore
+          .collection('userPasswords')
+          .doc(userUID)
+          .get();
       print('permanent address: ${addressDoc.data()}');
       return addressDoc.data()?['permanentAddress'] ?? '';
     } catch (e) {
@@ -191,8 +285,7 @@ class FirestoreHelper {
     final friendProfile = await getUserProfile(friendUID);
 
     final oldFriendList = await getFriendList();
-    if (oldFriendList.isEmpty) {
-    }
+    if (oldFriendList.isEmpty) {}
     //update my firestore
     try {
       await _firestore.collection('friendList').doc(myUID).set({
@@ -215,12 +308,13 @@ class FirestoreHelper {
     }
   }
 
-
   Future<List<String>> getFriendList() async {
     var myUID = FirebaseAuth.instance.currentUser!.uid;
     try {
-      final friendListDoc =
-          await _firestore.collection('friendList').doc(myUID).get();
+      final friendListDoc = await _firestore
+          .collection('friendList')
+          .doc(myUID)
+          .get();
       List<String> friendList = List<String>.from(
         friendListDoc.data()?['friendList'] ?? [],
       );
@@ -230,8 +324,6 @@ class FirestoreHelper {
       rethrow;
     }
   }
-
-  
 
   Future<void> updateFriendList(List<String> friendList) async {
     var myUID = FirebaseAuth.instance.currentUser!.uid;
@@ -267,19 +359,13 @@ class FirestoreHelper {
 
   Future<Map> getFriendProfiles() async {
     try {
-      String myUID = FirebaseAuth.instance.currentUser!.uid;
-      final friendDoc =
-          await _firestore.collection('friendList').doc(myUID).get();
-
-      var data = friendDoc.data();
-      var result = {};
-      if (data != null) {
-        result = data['profiles'];
-      } else {
-        result = {};
-      }
-
-      return result;
+    final querySnapshot = await _firestore.collection('userProfiles').get();
+    final profilesList = Map.fromEntries(
+      querySnapshot.docs.map(
+      (doc) => MapEntry(doc.id, doc.data()),
+      ),
+    );
+    return profilesList;
     } catch (e) {
       print('Error loading friend profiles: $e');
       rethrow;
@@ -311,17 +397,14 @@ class FirestoreHelper {
     }
   }
 
-  Future<void> addMessage(
-    {
+  Future<void> addMessage({
     required String title,
     required String body,
     required String imageUrl,
     required String type,
     required List<String> receivers,
     String? message,
-  }
-    
-  ) async {
+  }) async {
     final senderUID = FirebaseAuth.instance.currentUser!.uid;
 
     List<String> receiverTokens = [];
@@ -351,7 +434,15 @@ class FirestoreHelper {
       });
 
       //add notification
-      await addNotification(title, body, imageUrl, type, receivers, senderUID, message: message);
+      await addNotification(
+        title,
+        body,
+        imageUrl,
+        type,
+        receivers,
+        senderUID,
+        message: message,
+      );
     } catch (e) {
       print('Error adding message: $e');
       rethrow;
@@ -364,9 +455,9 @@ class FirestoreHelper {
     String imageUrl,
     String type,
     List<String> receivers,
-    String senderUID,
-    {String? message}
-  ) async {
+    String senderUID, {
+    String? message,
+  }) async {
     final timestamp = Timestamp.now();
     for (String receiver in receivers) {
       await _firestore.collection('notifications').doc(receiver).set({
@@ -389,8 +480,10 @@ class FirestoreHelper {
   Future<List<Map<String, dynamic>>> getNotifications() async {
     String myUID = FirebaseAuth.instance.currentUser!.uid;
     try {
-      final notificationDoc =
-          await _firestore.collection('notifications').doc(myUID).get();
+      final notificationDoc = await _firestore
+          .collection('notifications')
+          .doc(myUID)
+          .get();
       List<Map<String, dynamic>> notifications =
           List<Map<String, dynamic>>.from(
             notificationDoc.data()?['notifications'] ?? [],
@@ -408,7 +501,6 @@ class FirestoreHelper {
       rethrow;
     }
   }
-
 }
 
 class StorageHelper {

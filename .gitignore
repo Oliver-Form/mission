@@ -48,4 +48,5 @@ lib/credential.env
 lib/firebase_options.dart
 docs/
 .gitignore
+/ios/Runner/AppDelegate.swift
 

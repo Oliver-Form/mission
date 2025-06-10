@@ -1,3 +1,5 @@
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class LocationHelper {
@@ -15,5 +17,15 @@ class LocationHelper {
     if (!notificationPermission) {
       await Permission.notification.request();
     }
+  }
+  
+  Future<LatLng> getCurrentPosition() async {
+
+    Position position = await Geolocator.getCurrentPosition(
+      locationSettings: LocationSettings(
+        accuracy: LocationAccuracy.high,
+      ),
+    );
+    return LatLng(position.latitude, position.longitude);
   }
 }
